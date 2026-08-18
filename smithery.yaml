@@ -1,0 +1,13 @@
+startCommand:
+  type: stdio
+  configSchema:
+    type: object
+    properties:
+      vaultPath:
+        type: string
+        description: "Custom local directory path for storing notes and daily logs (defaults to .vaultcraft_data)"
+  commandFunction:
+    - uvx
+    - "--from"
+    - "."
+    - "vaultcraft"
