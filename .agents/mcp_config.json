@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "quickmemo": {
+      "$typeName": "exa.cascade_plugins_pb.CascadePluginCommandTemplate",
+      "command": "uv",
+      "args": [
+        "run",
+        "quickmemo"
+      ],
+      "env": {}
+    }
+  }
+}
