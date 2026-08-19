@@ -38,3 +38,7 @@ htmlcov/
 .vscode/
 .idea/
 *.swp
+
+# MCP & Bundles
+*.mcpb
+.quickmemo/

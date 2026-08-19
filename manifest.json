@@ -1,0 +1,22 @@
+{
+  "manifest_version": "0.2",
+  "name": "quickmemo",
+  "version": "0.1.0",
+  "description": "Minimalist Model Context Protocol server for context memo management",
+  "author": {
+    "name": "Abdullah Zafar"
+  },
+  "server": {
+    "type": "python",
+    "entry_point": "src/quickmemo/server.py",
+    "mcp_config": {
+      "command": "python",
+      "args": [
+        "-m",
+        "quickmemo"
+      ],
+      "env": {}
+    }
+  },
+  "license": "MIT"
+}
