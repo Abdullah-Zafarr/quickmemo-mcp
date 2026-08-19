@@ -216,3 +216,4 @@ tests/test_server.py::TestServerResourcesAndPrompts::test_prompts PASSED [100%]
 ## 📄 License
 
 MIT License © 2026 QuickMemo MCP Contributors.
+
