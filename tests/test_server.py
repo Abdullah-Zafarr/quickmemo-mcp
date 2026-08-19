@@ -1,115 +1,168 @@
-"""Functional tests for VaultCraft MCP Server tools, resources, and prompts."""
+"""Unit and integration tests for QuickMemo MCP Server."""
 
 import json
-import os
-import shutil
-import tempfile
 import pytest
-
-from vaultcraft.server import (
-    mcp,
-    storage,
-    create_or_update_note,
-    read_note,
-    search_vault,
-    find_backlinks,
-    get_graph_metrics,
-    log_daily_entry,
-    delete_note,
-    get_note_resource,
-    get_today_daily_resource,
-    get_graph_overview_resource,
-    synthesize_concept,
+from pathlib import Path
+from quickmemo.server import (
+    MemoStore,
+    add_memo,
+    list_memos,
+    get_memo,
+    search_memos,
+    delete_memo,
+    clear_memos,
+    get_all_memos_resource,
+    get_memo_stats_resource,
+    review_notes,
     daily_standup,
-    knowledge_gap_analysis,
+    store as global_store,
 )
-from vaultcraft.storage import VaultStorage
 
 
 @pytest.fixture(autouse=True)
-def setup_clean_vault(monkeypatch):
-    """Sets up an isolated temporary vault for every test."""
-    temp_dir = tempfile.mkdtemp()
-    temp_storage = VaultStorage(root_dir=temp_dir)
-    # Monkeypatch storage in server module
-    import vaultcraft.server as srv_mod
-    monkeypatch.setattr(srv_mod, "storage", temp_storage)
-    yield temp_storage
-    shutil.rmtree(temp_dir, ignore_errors=True)
-
-
-def test_tool_create_and_read_note():
-    res = create_or_update_note(
-        title="Zettelkasten Method",
-        content="The Zettelkasten method utilizes [[Atomic Notes]] and [[Bidirectional Links]].",
-        tags=["pkm", "productivity"]
-    )
-    assert "saved successfully" in res
-    assert "[[Atomic Notes]]" in res
-
-    read_res = read_note("Zettelkasten Method")
-    assert "# Zettelkasten Method" in read_res
-    assert "pkm" in read_res
-    assert "[[Atomic Notes]]" in read_res
-
-
-def test_tool_search_and_backlinks():
-    create_or_update_note("Smart Notes", "Book by Ahrens on [[Zettelkasten Method]].", ["books"])
-    create_or_update_note("Zettelkasten Method", "Core knowledge management system.", ["pkm"])
-
-    search_res = search_vault(query="Ahrens")
-    assert "Smart Notes" in search_res
-
-    backlinks_res = find_backlinks("Zettelkasten Method")
-    assert "Smart Notes" in backlinks_res
-
-
-def test_tool_metrics_and_delete():
-    create_or_update_note("Node A", "Links to [[Node B]].", ["graph"])
-    create_or_update_note("Node B", "Target node.", ["graph"])
-    create_or_update_note("Node Orphan", "Lonely node.", ["lonely"])
-
-    metrics_res = get_graph_metrics()
-    assert "Total Notes: 3" in metrics_res
-    assert "[[Node Orphan]]" in metrics_res
-
-    del_res = delete_note("Node Orphan")
-    assert "Successfully deleted" in del_res
-
-    not_found = read_note("Node Orphan")
-    assert "not found" in not_found
-
-
-def test_tool_daily_entry():
-    log_res = log_daily_entry("Shipped VaultCraft MCP server v1.0", category="Release")
-    assert "Logged entry" in log_res
-
-    daily_resource = get_today_daily_resource()
-    assert "Shipped VaultCraft MCP server v1.0" in daily_resource
-    assert "Release" in daily_resource
-
-
-def test_resources():
-    create_or_update_note("Resource Test Note", "Raw content payload.", ["test"])
+def isolated_store(tmp_path: Path):
+    """Fixture to provide a clean temporary storage file for every test."""
+    temp_file = tmp_path / "test_memos.json"
+    test_store = MemoStore(file_path=temp_file)
     
-    note_content = get_note_resource("Resource Test Note")
-    assert "Resource Test Note" in note_content
-    assert "Raw content payload." in note_content
-
-    graph_overview = get_graph_overview_resource()
-    parsed = json.loads(graph_overview)
-    assert parsed["total_notes"] == 1
+    # Patch the global store used by server tool functions
+    global_store.file_path = temp_file
+    global_store._save({})
+    yield test_store
 
 
-def test_prompts():
-    create_or_update_note("FastMCP Notes", "FastMCP simplifies creating Python MCP tools.", ["mcp"])
-    
-    prompt_synth = synthesize_concept(tag="mcp", objective="Understand FastMCP")
-    assert "FastMCP Notes" in prompt_synth
-    assert "Understand FastMCP" in prompt_synth
+class TestMemoStore:
+    def test_add_and_get(self, isolated_store: MemoStore):
+        memo = isolated_store.add(
+            title="MCP Protocol Research",
+            content="Learned about stdio JSON-RPC transport and FastMCP.",
+            category="learning",
+            tags=["mcp", "python"]
+        )
+        assert memo.id is not None
+        assert memo.title == "MCP Protocol Research"
+        assert memo.category == "learning"
+        assert memo.tags == ["mcp", "python"]
 
-    prompt_standup = daily_standup()
-    assert "Accomplishments" in prompt_standup
+        retrieved = isolated_store.get(memo.id)
+        assert retrieved is not None
+        assert retrieved.title == memo.title
+        assert retrieved.content == memo.content
 
-    prompt_gaps = knowledge_gap_analysis()
-    assert "FastMCP Notes" in prompt_gaps
+    def test_list_and_filter(self, isolated_store: MemoStore):
+        isolated_store.add("Note 1", "Content 1", category="work", tags=["urgent"])
+        isolated_store.add("Note 2", "Content 2", category="personal", tags=["ideas"])
+        isolated_store.add("Note 3", "Content 3", category="work", tags=["ideas"])
+
+        all_memos = isolated_store.list_all()
+        assert len(all_memos) == 3
+
+        work_memos = isolated_store.list_all(category="work")
+        assert len(work_memos) == 2
+
+        idea_memos = isolated_store.list_all(tag="ideas")
+        assert len(idea_memos) == 2
+
+    def test_search(self, isolated_store: MemoStore):
+        isolated_store.add("Bug in Auth API", "Token verification fails on expired JWT", category="bugs")
+        isolated_store.add("Recipe", "Pasta carbonara ingredients", category="food")
+
+        results = isolated_store.search("token")
+        assert len(results) == 1
+        assert results[0].title == "Bug in Auth API"
+
+        results_category = isolated_store.search("food")
+        assert len(results_category) == 1
+
+    def test_delete_and_clear(self, isolated_store: MemoStore):
+        m1 = isolated_store.add("Temp Note", "To be deleted")
+        assert isolated_store.delete(m1.id) is True
+        assert isolated_store.get(m1.id) is None
+        assert isolated_store.delete("non-existent") is False
+
+        isolated_store.add("Keep 1", "Text")
+        isolated_store.add("Keep 2", "Text")
+        cleared_count = isolated_store.clear()
+        assert cleared_count == 2
+        assert len(isolated_store.list_all()) == 0
+
+
+class TestServerTools:
+    def test_tool_workflow(self):
+        # 1. Add Memo
+        add_res = add_memo(
+            title="FastMCP Architecture",
+            content="FastMCP simplifies tool, resource, and prompt registration.",
+            category="mcp",
+            tags=["architecture", "sdk"]
+        )
+        assert "Created Memo #" in add_res
+        assert "FastMCP Architecture" in add_res
+
+        # 2. List Memos
+        list_res = list_memos()
+        assert "Found 1 memo(s)" in list_res
+        assert "FastMCP Architecture" in list_res
+
+        # Extract ID from response (e.g. #abc12345)
+        import re
+        match = re.search(r"#([a-f0-9]+)", add_res)
+        assert match is not None
+        memo_id = match.group(1)
+
+        # 3. Get Memo
+        get_res = get_memo(memo_id)
+        assert f"Memo #{memo_id}" in get_res
+        assert "FastMCP Architecture" in get_res
+
+        # 4. Search Memos
+        search_res = search_memos("architecture")
+        assert "Found 1 memo(s)" in search_res
+
+        # 5. Delete Memo
+        del_res = delete_memo(memo_id)
+        assert "successfully deleted" in del_res
+
+        # Verify empty
+        empty_list = list_memos()
+        assert "No memos found" in empty_list
+
+    def test_clear_memos_tool(self):
+        add_memo("A", "Content A")
+        add_memo("B", "Content B")
+        res = clear_memos()
+        assert "Cleared 2 memo(s)" in res
+        assert "No memos found" in list_memos()
+
+
+class TestServerResourcesAndPrompts:
+    def test_resources(self):
+        add_memo("Docker Tip", "Use multi-stage builds for small images", category="devops", tags=["docker"])
+        
+        # Test memo://all resource
+        digest = get_all_memos_resource()
+        assert "# QuickMemo Digest" in digest
+        assert "Docker Tip" in digest
+        assert "devops" in digest
+
+        # Test memo://stats resource
+        stats_raw = get_memo_stats_resource()
+        stats = json.loads(stats_raw)
+        assert stats["total_memos"] == 1
+        assert stats["categories"]["devops"] == 1
+        assert stats["tags"]["docker"] == 1
+
+    def test_prompts(self):
+        add_memo("Task 1", "Implement JSON-RPC serializer", category="dev")
+        add_memo("Task 2", "Write unit test suite", category="dev")
+
+        # Test review_notes prompt
+        review_prompt = review_notes(category="dev")
+        assert "Task 1" in review_prompt
+        assert "Task 2" in review_prompt
+        assert "prioritized action checklist" in review_prompt
+
+        # Test daily_standup prompt
+        standup_prompt = daily_standup()
+        assert "Task 1" in standup_prompt
+        assert "daily standup update" in standup_prompt
