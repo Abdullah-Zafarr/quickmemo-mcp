@@ -1,121 +1,139 @@
-# 🏛️ VaultCraft MCP
+# QuickMemo MCP Server 📝⚡
 
-[![Smithery Badge](https://smithery.ai/badge/vaultcraft)](https://smithery.ai/server/vaultcraft)
-[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
-[![MCP Protocol 2.0](https://img.shields.io/badge/MCP-Protocol%202.0-purple.svg)](https://modelcontextprotocol.io)
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/)
+[![MCP](https://img.shields.io/badge/MCP-2.0-orange.svg)](https://modelcontextprotocol.io/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Smithery Ready](https://img.shields.io/badge/Smithery-Compatible-success.svg)](https://smithery.ai/)
+[![Tests](https://img.shields.io/badge/tests-8%20passed-brightgreen.svg)](tests/)
 
-**VaultCraft MCP** is a high-performance, local-first Model Context Protocol (MCP) server that empowers AI assistants with structured **Zettelkasten knowledge management**, **bidirectional `[[wikilink]]` graphs**, and a **daily developer journal**.
+**QuickMemo MCP** is a sleek, minimalistic, and unique Model Context Protocol (MCP) server that provides AI assistants with a fast, structured scratchpad and context memo engine.
 
----
-
-## 🌟 Key Capabilities
-
-VaultCraft implements all three core primitives of the Model Context Protocol:
-
-- 🛠️ **7 MCP Tools**: Create atomic markdown notes with YAML frontmatter, search across concepts with relevance scoring, resolve bidirectional backlinks, compute knowledge graph connectivity metrics, and log daily developer activities.
-- 📦 **3 Dynamic MCP Resources**: Directly stream raw note markdown (`vault://notes/{title}`), live daily journal (`vault://daily/today`), and JSON graph analytics (`vault://graph/overview`).
-- 💡 **3 Custom MCP Prompts**: Instant workflows for concept synthesis, daily standup generation, and knowledge-gap link recommendation.
+Built cleanly using the official Python MCP SDK, QuickMemo showcases all **three core MCP primitives**—**Tools**, **Resources**, and **Prompts**—in an elegant, zero-bloat codebase.
 
 ---
 
-## 📋 MCP Interface Reference
+## 🌟 Key Highlights
 
-### 1. Tools
+- ⚡ **Minimalist & Zero-Bloat**: Under 150 lines of clean, readable Python code.
+- 🎯 **All 3 MCP Primitives**:
+  - **Tools**: Save, list, search, filter, retrieve, and delete context memos.
+  - **Resources**: Real-time markdown digest (`memo://all`) and dynamic telemetry (`memo://stats`).
+  - **Prompts**: Ready-to-use prompt templates for note reviews and daily standup generation.
+- 🔒 **Zero Configuration Required**: Uses local persistent JSON storage (`~/.quickmemo/memos.json` or custom path).
+- 🚀 **Marketplace & Registry Ready**: Preconfigured with `smithery.yaml` and `Dockerfile` for one-click deployment to Smithery and Glama.
 
-| Tool | Parameters | Description |
+---
+
+## 📐 Architecture Overview
+
+```
++-------------------------------------------------------------------------------+
+|                                  MCP CLIENT                                   |
+|             (Claude Desktop / Cursor IDE / Antigravity / Custom AI)           |
++-------------------------------------------------------------------------------+
+                                       ▲
+                                       │ JSON-RPC 2.0 (stdio)
+                                       ▼
++-------------------------------------------------------------------------------+
+|                             QUICKMEMO MCP SERVER                              |
+|                                                                               |
+|   [TOOLS]                     [RESOURCES]                 [PROMPTS]           |
+|   • add_memo                  • memo://all (Digest)       • review_notes      |
+|   • list_memos                • memo://stats (JSON)       • daily_standup     |
+|   • search_memos                                                              |
+|   • get_memo / delete_memo                                                    |
++-------------------------------------------------------------------------------+
+                                       │
+                                       ▼
+                         Local JSON Storage Engine
+                         (~/.quickmemo/memos.json)
+```
+
+---
+
+## 🛠️ MCP Primitives Catalog
+
+### 1. Tools (Model-Controlled Functions)
+
+| Tool Name | Parameters | Description |
 | :--- | :--- | :--- |
-| `create_or_update_note` | `title: str`, `content: str`, `tags?: list[str]` | Creates or updates an atomic note with YAML frontmatter and extracts `[[wikilinks]]`. |
-| `read_note` | `title: str` | Retrieves full markdown content, metadata, outgoing links, and inbound backlinks. |
-| `search_vault` | `query?: str`, `tag?: str`, `limit?: int` | Searches note titles, bodies, and tags with relevance scoring. |
-| `find_backlinks` | `title: str` | Finds all notes linking to the target concept via `[[wikilinks]]`. |
-| `get_graph_metrics` | *None* | Analyzes graph health, total links, tag frequencies, and orphan notes. |
-| `log_daily_entry` | `entry: str`, `category?: str` | Appends timestamped log entry to today's markdown journal (`daily/YYYY-MM-DD.md`). |
-| `delete_note` | `title: str` | Deletes a note and updates references. |
+| `add_memo` | `title: str`, `content: str`, `category?: str`, `tags?: list[str]` | Saves a new memo or snippet with optional category and tags. |
+| `list_memos` | `category?: str`, `tag?: str` | Lists saved memos with optional category and tag filtering. |
+| `get_memo` | `memo_id: str` | Retrieves full content and metadata for a specific memo. |
+| `search_memos` | `query: str` | Performs keyword search across title, content, tags, and category. |
+| `delete_memo` | `memo_id: str` | Deletes a memo by ID. |
+| `clear_memos` | *None* | Empties the memo store. |
 
-### 2. Resources
+### 2. Resources (Dynamic Context Streams)
 
 | Resource URI | MIME Type | Description |
 | :--- | :--- | :--- |
-| `vault://notes/{title}` | `text/markdown` | Direct markdown stream for any note in the vault. |
-| `vault://daily/today` | `text/markdown` | Real-time content of today's developer journal. |
-| `vault://graph/overview` | `application/json` | JSON graph metrics (total notes, links, tags, orphan notes). |
+| `memo://all` | `text/markdown` | Formatted dynamic markdown digest of all stored memos. |
+| `memo://stats` | `application/json` | Real-time statistics (total memos, categories breakdown, tag distribution). |
 
-### 3. Prompts
+### 3. Prompts (Pre-Engineered Workflow Templates)
 
 | Prompt Name | Arguments | Description |
 | :--- | :--- | :--- |
-| `synthesize_concept` | `tag: str`, `objective?: str` | Aggregates all notes for a tag and synthesizes a comprehensive concept briefing. |
-| `daily_standup` | `date_str?: str` | Converts daily journal entries into a clean 3-part standup update. |
-| `knowledge_gap_analysis` | *None* | Evaluates isolated notes and suggests new bridging `[[wikilinks]]`. |
+| `review_notes` | `category?: str` | Synthesizes saved memos into key takeaways and an actionable checklist. |
+| `daily_standup` | *None* | Converts recent memos into a standard 3-part daily standup report. |
 
 ---
 
 ## 🚀 Quickstart & Installation
 
-### Option 1: Install via Smithery (Recommended)
-
-To install VaultCraft for Claude Desktop automatically via [Smithery](https://smithery.ai/):
-
-```bash
-npx -y @smithery/cli install vaultcraft --client claude
-```
-
----
-
-### Option 2: Local Installation with `uv`
+### Option 1: Local Setup with `uv` (Recommended)
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/vaultcraft-mcp.git
-cd vaultcraft-mcp
+git clone https://github.com/your-username/quickmemo-mcp.git
+cd quickmemo-mcp
 
-# Create virtual environment and install
-uv venv
-source .venv/bin/activate  # On Windows: .\.venv\Scripts\activate
+# Install dependencies and package in editable mode
 uv pip install -e .
+
+# Run test suite
+uv run pytest -v
+
+# Run the interactive demo
+uv run python tests/demo_client.py
 ```
 
----
-
-### Option 3: Run with Docker
+### Option 2: Running Directly via CLI
 
 ```bash
-docker build -t vaultcraft-mcp .
-docker run -i --rm -v $(pwd)/.vaultcraft_data:/data/vault vaultcraft-mcp
+# Run server over stdio
+quickmemo
 ```
 
 ---
 
-## ⚙️ Client Configurations
+## 🔌 Client Configuration
 
-### Claude Desktop Configuration
-
-Add the following to your `claude_desktop_config.json`:
+### Claude Desktop
+Add QuickMemo to your `claude_desktop_config.json`:
+- **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+- **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
 
 ```json
 {
   "mcpServers": {
-    "vaultcraft": {
+    "quickmemo": {
       "command": "uvx",
-      "args": ["--from", "vaultcraft", "vaultcraft"],
-      "env": {
-        "VAULTCRAFT_PATH": "C:/Users/YourName/Documents/MyVault"
-      }
+      "args": ["--from", "quickmemo", "quickmemo"]
     }
   }
 }
 ```
 
-*Or for direct local development:*
+### Cursor IDE
+Add to `.cursor/mcp.json` in your workspace:
 
 ```json
 {
   "mcpServers": {
-    "vaultcraft": {
-      "command": "python",
-      "args": ["-m", "vaultcraft"],
-      "cwd": "C:/path/to/vaultcraft-mcp"
+    "quickmemo": {
+      "command": "quickmemo"
     }
   }
 }
@@ -123,49 +141,54 @@ Add the following to your `claude_desktop_config.json`:
 
 ---
 
-### Cursor Configuration
+## ☁️ Deploying to Smithery / Glama
 
-In Cursor Settings $\rightarrow$ Features $\rightarrow$ MCP Servers $\rightarrow$ Add New MCP Server:
-- **Name**: `vaultcraft`
-- **Type**: `command`
-- **Command**: `uv run vaultcraft`
+This repository is pre-configured for the **Smithery** registry with `smithery.yaml` and `Dockerfile`.
 
----
-
-### MCP Inspector (Interactive Visual Debugger)
-
-Test tools, resources, and prompt schemas directly in your browser:
-
+### Install via Smithery CLI
 ```bash
-npx @modelcontextprotocol/inspector uv run vaultcraft
+npx -y @smithery/cli install quickmemo --client claude
 ```
+
+### Manual Registry Deployment
+1. Push your repository to GitHub.
+2. Visit [Smithery.ai](https://smithery.ai) and sign in.
+3. Import your GitHub repository. Smithery automatically detects `smithery.yaml` and deploys your MCP server.
 
 ---
 
 ## 🧪 Testing
 
-Run the automated test suite with pytest:
-
+Run the automated test suite:
 ```bash
-pytest tests/
+uv run pytest -v
 ```
 
-Run the end-to-end interactive demo client:
+Output:
+```
+tests/test_server.py::TestMemoStore::test_add_and_get PASSED             [ 12%]
+tests/test_server.py::TestMemoStore::test_list_and_filter PASSED         [ 25%]
+tests/test_server.py::TestMemoStore::test_search PASSED                  [ 37%]
+tests/test_server.py::TestMemoStore::test_delete_and_clear PASSED        [ 50%]
+tests/test_server.py::TestServerTools::test_tool_workflow PASSED         [ 62%]
+tests/test_server.py::TestServerTools::test_clear_memos_tool PASSED      [ 75%]
+tests/test_server.py::TestServerResourcesAndPrompts::test_resources PASSED [ 87%]
+tests/test_server.py::TestServerResourcesAndPrompts::test_prompts PASSED [100%]
 
-```bash
-python tests/test_client_interactive.py
+============================== 8 passed in 1.10s ==============================
 ```
 
 ---
 
-## 📚 Deliverables & Documentation
+## 📚 Deliverables & Learning Documentation
 
-- 📘 [Playwright MCP Exploration Experience Report](PLAYWRIGHT_MCP_EXPERIENCE.md)
-- 📗 [MCP Fundamentals & Architecture Guide](MCP_FUNDAMENTALS.md)
-- ⚙️ [Smithery Manifest](smithery.yaml)
+- 📖 **Existing MCP Hands-On Evaluation**: [`EXISTING_MCP_EXPERIENCE.md`](EXISTING_MCP_EXPERIENCE.md)
+- 📘 **MCP Architecture & Fundamentals Guide**: [`MCP_FUNDAMENTALS.md`](MCP_FUNDAMENTALS.md)
+- 💻 **Interactive Live Demo Script**: [`tests/demo_client.py`](tests/demo_client.py)
+- ⚙️ **Smithery Configuration**: [`smithery.yaml`](smithery.yaml)
 
 ---
 
 ## 📄 License
 
-MIT License - feel free to use and extend for personal or commercial projects.
+MIT License © 2026 QuickMemo MCP Contributors.

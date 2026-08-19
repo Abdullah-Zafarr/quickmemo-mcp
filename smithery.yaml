@@ -3,11 +3,11 @@ startCommand:
   configSchema:
     type: object
     properties:
-      vaultPath:
+      storagePath:
         type: string
-        description: "Custom local directory path for storing notes and daily logs (defaults to .vaultcraft_data)"
+        description: "Custom local path for storing memos JSON file (defaults to ~/.quickmemo/memos.json)"
   commandFunction:
     - uvx
     - "--from"
     - "."
-    - "vaultcraft"
+    - "quickmemo"
