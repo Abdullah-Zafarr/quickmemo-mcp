@@ -24,6 +24,30 @@ Built cleanly using the official Python MCP SDK, QuickMemo showcases all **three
 
 ---
 
+## 📁 Project Structure
+
+```
+quickmemo-mcp/
+├── docs/                               # Learning documentation & reports
+│   ├── EXISTING_MCP_EXPERIENCE.md      # Hands-on write-up evaluating Context7 & Playwright
+│   └── MCP_FUNDAMENTALS.md             # Complete MCP protocol & architecture guide
+├── src/
+│   └── quickmemo/                      # MCP Server package (<150 LOC)
+│       ├── __init__.py                 # Package exports
+│       ├── __main__.py                 # Executable entrypoint
+│       └── server.py                   # Core server (Tools, Resources, Prompts)
+├── tests/
+│   ├── demo_client.py                  # Live interactive demonstration script
+│   └── test_server.py                  # Pytest unit & integration test suite
+├── Dockerfile                          # Containerized deployment manifest
+├── LICENSE                             # MIT License
+├── pyproject.toml                      # Package configuration & dependencies
+├── README.md                           # Quickstart & user documentation
+└── smithery.yaml                       # Smithery registry manifest
+```
+
+---
+
 ## 📐 Architecture Overview
 
 ```
@@ -182,8 +206,8 @@ tests/test_server.py::TestServerResourcesAndPrompts::test_prompts PASSED [100%]
 
 ## 📚 Deliverables & Learning Documentation
 
-- 📖 **Existing MCP Hands-On Evaluation**: [`EXISTING_MCP_EXPERIENCE.md`](EXISTING_MCP_EXPERIENCE.md)
-- 📘 **MCP Architecture & Fundamentals Guide**: [`MCP_FUNDAMENTALS.md`](MCP_FUNDAMENTALS.md)
+- 📖 **Existing MCP Hands-On Evaluation**: [`docs/EXISTING_MCP_EXPERIENCE.md`](docs/EXISTING_MCP_EXPERIENCE.md)
+- 📘 **MCP Architecture & Fundamentals Guide**: [`docs/MCP_FUNDAMENTALS.md`](docs/MCP_FUNDAMENTALS.md)
 - 💻 **Interactive Live Demo Script**: [`tests/demo_client.py`](tests/demo_client.py)
 - ⚙️ **Smithery Configuration**: [`smithery.yaml`](smithery.yaml)
 
