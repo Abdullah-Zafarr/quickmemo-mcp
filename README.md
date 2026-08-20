@@ -8,7 +8,7 @@
 
 **QuickMemo MCP** is a sleek, minimalistic, and unique Model Context Protocol (MCP) server that provides AI assistants with a fast, structured scratchpad and context memo engine.
 
-Built cleanly using the official Python MCP SDK, QuickMemo showcases all **three core MCP primitives**—**Tools**, **Resources**, and **Prompts**—in an elegant, zero-bloat codebase.
+Built cleanly using the official Python MCP SDK, QuickMemo showcases all **three core MCP primitives**—**Tools**, **Resources**, and **Prompts**—in an elegant, zero-bloat codebase
 
 ---
 
