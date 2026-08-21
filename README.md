@@ -164,6 +164,33 @@ Add to `.cursor/mcp.json` in your workspace:
 }
 ```
 
+### Antigravity IDE
+Add to your project's `.agents/mcp_config.json` or global MCP settings:
+
+```json
+{
+  "mcpServers": {
+    "quickmemo": {
+      "command": "quickmemo"
+    }
+  }
+}
+```
+
+### Windsurf & VS Code (Roo Code / Continue)
+Add QuickMemo under your MCP server settings:
+
+```json
+{
+  "mcpServers": {
+    "quickmemo": {
+      "command": "uv",
+      "args": ["run", "quickmemo"]
+    }
+  }
+}
+```
+
 ---
 
 ## ☁️ Deploying to Smithery / Glama
