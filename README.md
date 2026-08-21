@@ -19,8 +19,9 @@ Built cleanly using the official Python MCP SDK, QuickMemo showcases all **three
   - **Tools**: Save, list, search, filter, retrieve, and delete context memos.
   - **Resources**: Real-time markdown digest (`memo://all`) and dynamic telemetry (`memo://stats`).
   - **Prompts**: Ready-to-use prompt templates for note reviews and daily standup generation.
-- 🔒 **Zero Configuration Required**: Uses local persistent JSON storage (`~/.quickmemo/memos.json` or custom path).
+- 🔒 **Zero Configuration Required**: Instant out-of-the-box local persistent JSON storage (`~/.quickmemo/memos.json`).
 - 🚀 **Marketplace & Registry Ready**: Preconfigured with `smithery.yaml` and `Dockerfile` for one-click deployment to Smithery and Glama.
+- 🔌 **Universal Compatibility**: Works seamlessly with Claude Desktop, Cursor, Antigravity IDE, Windsurf, and custom MCP clients.
 
 ---
 
@@ -110,7 +111,7 @@ quickmemo-mcp/
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/quickmemo-mcp.git
+git clone https://github.com/Abdullah-Zafarr/quickmemo-mcp.git
 cd quickmemo-mcp
 
 # Install dependencies and package in editable mode
