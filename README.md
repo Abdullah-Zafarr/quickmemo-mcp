@@ -247,6 +247,30 @@ tests/test_server.py::TestServerResourcesAndPrompts::test_prompts PASSED [100%]
 
 ---
 
+## ⚙️ Environment Configuration & Storage Customization
+
+By default, QuickMemo persists memos at `~/.quickmemo/memos.json`. You can customize the storage path by setting the `QUICKMEMO_STORAGE` environment variable:
+
+```bash
+# Custom storage path example
+export QUICKMEMO_STORAGE="/path/to/my_custom_memos.json"
+quickmemo
+```
+
+---
+
+## ❓ Troubleshooting & FAQs
+
+- **Server not connecting in Claude Desktop or Cursor?**
+  - Ensure `uv` or `quickmemo` is available in your system's `PATH`.
+  - Check that the path to `quickmemo` is executable and python version >= 3.10 is installed.
+- **Where are my memos stored?**
+  - Run the `memo://stats` resource in your client to view the exact active `storage_path`.
+- **How to run tests locally?**
+  - Execute `uv run pytest -v` from the repository root to verify all 8 unit & integration tests pass.
+
+---
+
 ## 📚 Deliverables & Learning Documentation
 
 - 📖 **Existing MCP Hands-On Evaluation**: [`docs/EXISTING_MCP_EXPERIENCE.md`](docs/EXISTING_MCP_EXPERIENCE.md)
