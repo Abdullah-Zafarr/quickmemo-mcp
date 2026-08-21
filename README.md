@@ -105,6 +105,21 @@ quickmemo-mcp/
 
 ---
 
+## 💡 AI Assistant Workflows & Use Cases
+
+1. **🧠 Multi-Step Code Refactoring Scratchpad**:
+   - The LLM stores tentative architecture decisions and checklist items as memos (`category: "refactor"`).
+   - Allows long-horizon task continuity without overflowing working memory.
+
+2. **🔄 Session Handover & Context Preservation**:
+   - Before ending a chat session, ask the AI: *"Save a summary memo of today's progress and active blockers."*
+   - Start the next session with *"Retrieve memos tagged 'blockers' to resume work."*
+
+3. **📊 Real-Time Daily Standup Generation**:
+   - Trigger the `daily_standup` prompt to instantly consolidate team notes, bug findings, and feature progress into a formatted report.
+
+---
+
 ## 🚀 Quickstart & Installation
 
 ### Option 1: Local Setup with `uv` (Recommended)
